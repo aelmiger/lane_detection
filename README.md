@@ -34,7 +34,7 @@ Such a lane is described in the perspective view with the following equation:
 
 Whats special about this model is, that it works in perspective view in contrast to models in birdseye view.
 
-A left and right lane boundary can be described by altering the b parameter. All other parameters remain the same. This means that both lane boundaries influence the lane model, which increases its robustness. Furthermore the difference between the $b_l$ and the $b_r$ parameter stay the same, because that difference is related to the lane width.
+A left and right lane boundary can be described by altering the b parameter. All other parameters remain the same. This means that both lane boundaries influence the lane model, which increases its robustness. Furthermore the difference between the b_left and the b_right parameter stay the same, because that difference is related to the lane width.
 
 The following image shows the influence of the parameters on the lane model.
 

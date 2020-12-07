@@ -188,4 +188,4 @@ while True:
     ####################################################
 
 if const.WRITE_VIDEO:
-    visual.writeVideo()                                             # Write video to file
+    visual.write_video()                                             # Write video to file

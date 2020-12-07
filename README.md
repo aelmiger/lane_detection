@@ -28,7 +28,7 @@ The used lane model is called the hyperbola-pair model, because the lane boundar
 
 Such a lane is described in the perspective view with the following equation:
 
-![equation](https://latex.codecogs.com/gif.download?u%20%3D%20%5Cfrac%7Bk%7D%7Bv-h%7D%20+%20b%20%28v-h%29+c)
+<img src="docs/CodeCogsEqn.gif" width="10%">
 
 (u,v) are image coordinates, k describes the curvature, h is the height of the horizon in image coordinates, b is a shift of a lane boundary, while c is a shift of the entire lane.
 

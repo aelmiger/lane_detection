@@ -13,7 +13,7 @@
 ######################### MODE CONSTS #########################
 MODE = "video"                      # set mode: "camera" = live camera input, "video" = video input, "simulink" = simulink input
 VISUALIZE = True                    #  set to True or False to visualize lane detection
-WRITE_VIDEO = False                 # Write Video File after Execution
+WRITE_VIDEO = True                 # Write Video File after Execution
 PRINT_TIME_PER_FRAME = False         # Print ms per loop in console
 ######################### PATH CONSTS #########################
 PATH = ""  # path of the current directory ("workspace") 
@@ -27,3 +27,4 @@ IMAGE_HEIGHT = 360
 LANE_WIDTH = 1.5                        # specify lane width. no specific unit
 BOUNDARY_THRESH = 1.8                   # smaller value means a broader search area for boundary points
 HORIZON = -40.1                         # horizon in image pixel. NEEDS TO HAVE A DECIMAL PLACE TO AVOID DIVISION BY 0 (80 => 80.1)
+FILTER_STRENGTH = 15                    # number of frames where lane is smoothed with moving average

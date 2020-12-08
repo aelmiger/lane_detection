@@ -17,7 +17,8 @@ import numpy as np
 import cv2
 from scipy.optimize import lsq_linear
 import constants as const
-
+from collections import deque  
+      
 class Lane_Detection:
     def __init__(self):
         self.v = np.arange(0, const.IMAGE_HEIGHT, 1)  # vertical points
@@ -33,6 +34,10 @@ class Lane_Detection:
         self.bc = 0 # b-skew of lane center
         self.c = 0 # c-horizontal offset of lane
 
+        self.bcdq = deque(maxlen=const.FILTER_STRENGTH)   
+        self.bldq = deque(maxlen=const.FILTER_STRENGTH)   
+        self.brdq = deque(maxlen=const.FILTER_STRENGTH)   
+
         self.left_lane_points = np.array([])
         self.right_lane_points = np.array([])
         
@@ -43,10 +48,6 @@ class Lane_Detection:
         # The constraint on c dramatically increases robustness
         self.low_b = np.array([-500000, -8, -8, const.IMAGE_WIDTH/2 -20])
         self.up_b = np.array([500000, 8, 8, const.IMAGE_WIDTH/2 +20])
-
-    def testImg(self,img):
-        print("Test")
-        print(img.shape)
 
     # Calculate lane hyperbola for given parameters
     def hyperbola_pair(self, b):
@@ -139,9 +140,14 @@ class Lane_Detection:
     # Function solves for hyperbola-pair lane parameters
     # More info is in the paper listed at the top of this file
     def solve_lane(self):
+        # generate matrices for lsq solver
+        A, b = self.preprocess_for_solving()
+        # returning the solved parameters (k,bl,br,c)
+        self.solving_lane_params(A, b)
+
+    def preprocess_for_solving(self):
         l = self.left_lane_points
         r = self.right_lane_points
-
         # following lines create A matrix  and b vector for least square porblem
         l_ind = ~np.isnan(l)
         r_ind = ~np.isnan(r)
@@ -166,8 +172,9 @@ class Lane_Detection:
         RA = np.hstack((np.hstack((rA, zeros)), np.hstack((rh, ones))))
         A = np.vstack((LA, RA))
         b = (np.concatenate((l_num, r_num))).flatten()
+        return A, b
 
-        # returning the solved parameters (k,bl,br,c)
+    def solving_lane_params(self, A, b):
         x = lsq_linear(A, b, bounds=(self.low_b, self.up_b), method='bvls', max_iter = 3).x
         # set new lane model param from least square solution
         self.k = x[0]
@@ -175,7 +182,6 @@ class Lane_Detection:
         self.br=x[2]
         self.c = x[3]
         self.bc = (x[1]+x[2])/2
-        
         # calc lane points
         self.lane = self.hyperbola_pair(self.bc)
 
@@ -186,7 +192,21 @@ class Lane_Detection:
             self.get_initial_lane_points(edge_image)
             self.solve_lane()
 
+        #Only one lane found
+        self.interpolate_missing_lane()            
 
+        #Lane width not correct size
+        self.adjust_lane_width()            
+
+        #Vehicle not on lane -> recenter lane line
+        self.recenter_lane()
+    
+        #smooth lane
+        self.filter_lane()
+         
+        self.lane = self.hyperbola_pair(self.bc)
+
+    def interpolate_missing_lane(self):
         #Only one lane found
         if ~np.isfinite(self.left_lane_points).any():
             self.bl = self.br-self.lane_width-0.3
@@ -195,6 +215,7 @@ class Lane_Detection:
             self.br = self.bl+self.lane_width+0.3
             self.bc = (self.bl+self.br)/2            
 
+    def adjust_lane_width(self):
         #Lane width not correct size
         if abs(self.bl-self.br)<(self.lane_width*0.8) or abs(self.bl-self.br)>(self.lane_width)*1.2:
             length_l = np.count_nonzero(~np.isnan(self.left_lane_points))
@@ -205,18 +226,24 @@ class Lane_Detection:
                 self.bl = self.br-self.lane_width
             self.bc = (self.bl+self.br)/2            
 
-        
+    def recenter_lane(self):
         #Vehicle not on lane -> recenter lane line
         if self.bc > (self.lane_width/1.1):
             self.bl=self.bl-self.lane_width
             self.br=self.br-self.lane_width
-            
+
         if self.bc < (-self.lane_width/1.1):
             self.bl=self.bl+self.lane_width
             self.br=self.br+self.lane_width
 
-        self.bc = (self.bl+self.br)/2            
-        self.lane = self.hyperbola_pair(self.bc)
+    def filter_lane(self):
+        self.bc = (self.bl+self.br)/2 
+        self.bcdq.append(self.bc)
+        self.bc = sum(bc for bc in self.bcdq)/len(self.bcdq)
+        self.bldq.append(self.bl)
+        self.bl = sum(bc for bc in self.bldq)/len(self.bldq)
+        self.brdq.append(self.br)
+        self.br = sum(bc for bc in self.brdq)/len(self.brdq)
 
 
 

@@ -6,7 +6,7 @@
   <h1 align="center">Robust lane detection and parameter estimation</h3>
 
   <p align="center">
-    Lightweight lane detection in realtime with the hyperbola-pair lane model
+    Lightweight lane detection in realtime with a hyperbola-pair lane model
     <br />
   </p>
 </p>

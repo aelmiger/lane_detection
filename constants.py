@@ -27,4 +27,4 @@ IMAGE_HEIGHT = 360
 LANE_WIDTH = 1.5                        # specify lane width. no specific unit
 BOUNDARY_THRESH = 1.8                   # smaller value means a broader search area for boundary points
 HORIZON = -40.1                         # horizon in image pixel. NEEDS TO HAVE A DECIMAL PLACE TO AVOID DIVISION BY 0 (80 => 80.1)
-FILTER_STRENGTH = 15                    # number of frames where lane is smoothed with moving average
+FILTER_STRENGTH = 1                    # number of frames where lane is smoothed with moving average
